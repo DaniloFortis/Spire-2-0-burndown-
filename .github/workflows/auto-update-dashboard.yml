@@ -52,9 +52,48 @@ jobs:
         run: |
           python parse_and_map_milestones.py
 
-      - name: Run dashboard update
+      - name: Update historical actuals with all dates through today
         run: |
-          python update_today_burndown.py
+          # Update the historical actuals file to include all dates from May 11 through today
+          TODAY=$(date +%Y-%m-%d)
+          python -c "
+          from datetime import datetime
+          import sys
+
+          # Read and update the calculate_historical_actuals.py script
+          with open('calculate_historical_actuals.py', 'r') as f:
+              content = f.read()
+
+          # Update END_DATE to today
+          today_str = datetime.now().strftime('%Y, %m, %d')
+          content = content.replace(
+              'END_DATE = datetime(2026, 5, 28)',
+              f'END_DATE = datetime({today_str.replace(\"-\", \", \")})'
+          )
+
+          # Update OUTPUT_FILE to match the date range
+          today_suffix = datetime.now().strftime('%m_%d')
+          content = content.replace(
+              'OUTPUT_FILE = \"historical_actuals_5_11_to_5_28.json\"',
+              f'OUTPUT_FILE = \"historical_actuals_5_11_to_{today_suffix}.json\"'
+          )
+
+          with open('calculate_historical_actuals.py', 'w') as f:
+              f.write(content)
+          "
+
+          # Run the updated script to calculate actuals through today
+          python calculate_historical_actuals.py
+
+          # Update calculate_burndown_projections.py to use the new file
+          TODAY_SUFFIX=$(date +%m_%d)
+          sed -i "s/historical_actuals_5_11_to_.*\.json/historical_actuals_5_11_to_${TODAY_SUFFIX}.json/g" calculate_burndown_projections.py
+
+      - name: Recalculate projections and regenerate dashboard
+        run: |
+          python calculate_burndown_projections.py
+          python generate_burndown_projection_chart.py
+          cp spire_2_0_projection_dashboard.html docs/index.html
 
       - name: Commit and push changes
         run: |
@@ -63,7 +102,7 @@ jobs:
 
           # Check if there are changes
           if [[ -n $(git status --porcelain) ]]; then
-            git add docs/index.html burndown_projections.json burndown_chart.png slack_message.json
+            git add docs/index.html burndown_projections.json historical_actuals_*.json burndown_chart.png slack_message.json spire_2_0_projection_dashboard.html
 
             # Get metrics for commit message
             BUGS=$(python -c "import json; data=json.load(open('burndown_projections.json')); print(data['current_active_bugs'])")
