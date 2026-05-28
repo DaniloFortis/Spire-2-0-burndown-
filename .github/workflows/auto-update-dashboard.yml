@@ -55,24 +55,23 @@ jobs:
       - name: Update historical actuals with all dates through today
         run: |
           # Update the historical actuals file to include all dates from May 11 through today
-          TODAY=$(date +%Y-%m-%d)
           python -c "
           from datetime import datetime
-          import sys
 
           # Read and update the calculate_historical_actuals.py script
           with open('calculate_historical_actuals.py', 'r') as f:
               content = f.read()
 
-          # Update END_DATE to today
-          today_str = datetime.now().strftime('%Y, %m, %d')
+          # Update END_DATE to today (without leading zeros)
+          now = datetime.now()
+          year, month, day = now.year, now.month, now.day
           content = content.replace(
               'END_DATE = datetime(2026, 5, 28)',
-              f'END_DATE = datetime({today_str.replace(\"-\", \", \")})'
+              f'END_DATE = datetime({year}, {month}, {day})'
           )
 
           # Update OUTPUT_FILE to match the date range
-          today_suffix = datetime.now().strftime('%m_%d')
+          today_suffix = now.strftime('%m_%d')
           content = content.replace(
               'OUTPUT_FILE = \"historical_actuals_5_11_to_5_28.json\"',
               f'OUTPUT_FILE = \"historical_actuals_5_11_to_{today_suffix}.json\"'
