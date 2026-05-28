@@ -26,11 +26,11 @@ if sys.platform == 'win32':
 
 # Configuration
 BUGS_FILE = "bugs_with_parsed_dates.json"
-OUTPUT_FILE = "historical_actuals_5_11_to_5_21.json"
+OUTPUT_FILE = "historical_actuals_5_11_to_5_28.json"
 
 # Date range
 START_DATE = datetime(2026, 5, 11)
-END_DATE = datetime(2026, 5, 21)
+END_DATE = datetime(2026, 5, 28)
 
 
 def load_bugs():
