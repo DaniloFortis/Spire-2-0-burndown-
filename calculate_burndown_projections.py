@@ -24,7 +24,7 @@ if sys.platform == 'win32':
 # Configuration
 BUGS_FILE = "bugs_with_parsed_dates.json"
 HISTORICAL_RATE_FILE = "historical_rate_analysis.json"
-HISTORICAL_ACTUALS_FILE = "historical_actuals_5_11_to_5_21.json"
+HISTORICAL_ACTUALS_FILE = "historical_actuals_5_11_to_5_25.json"
 OUTPUT_FILE = "burndown_projections.json"
 
 # Key Dates
