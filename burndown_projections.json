@@ -1,12 +1,12 @@
 {
   "generated_date": "2026-05-21",
-  "generated_timestamp": "2026-05-29T00:02:03.191957",
+  "generated_timestamp": "2026-05-29T15:18:58.137499",
   "chart_start_date": "2026-05-11",
   "chart_start_bug_count": 234,
-  "current_active_bugs": 105,
+  "current_active_bugs": 104,
   "historical_daily_rate": -3.8,
-  "actual_2_0_rate": 7.39,
-  "ideal_rate_per_day": -13.12,
+  "actual_2_0_rate": 7.43,
+  "ideal_rate_per_day": -13.0,
   "ideal_rate_from_start": -14.62,
   "estimated_line_rate": -10.7,
   "estimated_line_rate_source": "last 10 business days",
@@ -257,7 +257,7 @@
     ]
   },
   "metrics": {
-    "velocity_gap": 1.78,
+    "velocity_gap": 1.75,
     "on_track": false
   }
 }
