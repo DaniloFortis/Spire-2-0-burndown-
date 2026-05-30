@@ -1,12 +1,12 @@
 {
   "generated_date": "2026-05-21",
-  "generated_timestamp": "2026-05-29T21:11:09.405812",
+  "generated_timestamp": "2026-05-30T00:02:25.485496",
   "chart_start_date": "2026-05-11",
   "chart_start_bug_count": 234,
-  "current_active_bugs": 99,
+  "current_active_bugs": 97,
   "historical_daily_rate": -3.8,
-  "actual_2_0_rate": 7.96,
-  "ideal_rate_per_day": -12.38,
+  "actual_2_0_rate": 8.04,
+  "ideal_rate_per_day": -12.12,
   "ideal_rate_from_start": -14.62,
   "estimated_line_rate": -10.4,
   "estimated_line_rate_source": "last 10 business days",
@@ -117,75 +117,59 @@
     ],
     "estimated": [
       {
-        "date": "2026-05-29",
-        "count": 108
-      },
-      {
         "date": "2026-05-30",
-        "count": 108
+        "count": 97
       },
       {
         "date": "2026-05-31",
-        "count": 108
+        "count": 97
       },
       {
         "date": "2026-06-01",
-        "count": 97.6
+        "count": 86.6
       },
       {
         "date": "2026-06-02",
-        "count": 87.2
+        "count": 76.2
       },
       {
         "date": "2026-06-03",
-        "count": 76.8
+        "count": 65.8
       },
       {
         "date": "2026-06-04",
-        "count": 66.4
+        "count": 55.4
       },
       {
         "date": "2026-06-05",
-        "count": 56.0
+        "count": 45.0
       },
       {
         "date": "2026-06-06",
-        "count": 56.0
+        "count": 45.0
       },
       {
         "date": "2026-06-07",
-        "count": 56.0
+        "count": 45.0
       },
       {
         "date": "2026-06-08",
-        "count": 45.6
+        "count": 34.6
       },
       {
         "date": "2026-06-09",
-        "count": 35.2
+        "count": 24.2
       },
       {
         "date": "2026-06-10",
-        "count": 24.8
+        "count": 13.8
       },
       {
         "date": "2026-06-11",
-        "count": 14.4
+        "count": 3.4
       },
       {
         "date": "2026-06-12",
-        "count": 4.0
-      },
-      {
-        "date": "2026-06-13",
-        "count": 4.0
-      },
-      {
-        "date": "2026-06-14",
-        "count": 4.0
-      },
-      {
-        "date": "2026-06-15",
         "count": 0
       }
     ],
@@ -265,11 +249,15 @@
       {
         "date": "2026-05-29",
         "count": 108
+      },
+      {
+        "date": "2026-05-30",
+        "count": 97
       }
     ]
   },
   "metrics": {
-    "velocity_gap": 1.56,
+    "velocity_gap": 1.51,
     "on_track": false
   }
 }
