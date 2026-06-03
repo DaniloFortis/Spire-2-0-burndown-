@@ -115,12 +115,13 @@ def extract_milestone_from_bug(bug: dict) -> str:
 def parse_bug_data(bugs_file: str) -> List[dict]:
     """
     Parse bug data and extract key information.
+    Filters to ONLY Bug-type tasks (custom_item_id == 1002), excluding features/stories.
 
     Args:
         bugs_file: Path to spire_bugs_complete.json
 
     Returns:
-        List of parsed bug dictionaries
+        List of parsed bug dictionaries (Bug type only)
     """
     print(f"📂 Loading bugs from {bugs_file}...")
 
@@ -128,11 +129,16 @@ def parse_bug_data(bugs_file: str) -> List[dict]:
         bugs_data = json.load(f)
 
     bugs = bugs_data.get("bugs", [])
-    print(f"✅ Loaded {len(bugs)} bugs")
+    print(f"✅ Loaded {len(bugs)} total tasks")
+
+    # ClickUp custom_item_id = 1002 is "Bug" type
+    BUG_TYPE_ID = 1002
+    bugs_only = [b for b in bugs if b.get('custom_item_id') == BUG_TYPE_ID]
+    print(f"✅ Filtered to {len(bugs_only)} Bug-type tasks (excluding features/stories)")
 
     parsed_bugs = []
 
-    for bug in bugs:
+    for bug in bugs_only:
         # Extract basic info
         bug_id = bug.get("id")
         name = bug.get("name", "")

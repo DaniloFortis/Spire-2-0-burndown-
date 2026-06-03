@@ -42,10 +42,12 @@ jobs:
       - name: Fetch bug data from ClickUp
         env:
           CLICKUP_API_KEY: ${{ secrets.CLICKUP_API_KEY }}
-          CLICKUP_LIST_ID: 901207871711
+          # Multi-list fetch: bugs span backlog, sprints, and triage lists
+          # The fetcher will deduplicate tasks that appear in multiple lists
+          CLICKUP_LIST_IDS: "901207871711,901206064082,901211328806,901326883162,901326883179,901326883209,901327316653"
         run: |
           echo "CLICKUP_API_KEY=$CLICKUP_API_KEY" > .env
-          echo "CLICKUP_LIST_ID=$CLICKUP_LIST_ID" >> .env
+          echo "CLICKUP_LIST_IDS=$CLICKUP_LIST_IDS" >> .env
           python clickup_batch_fetcher.py
 
       - name: Parse bug data

@@ -18,7 +18,23 @@ load_dotenv()
 
 # ClickUp API Configuration
 API_KEY = os.getenv('CLICKUP_API_KEY')
-LIST_ID = os.getenv('CLICKUP_LIST_ID', '901207871711')
+# Support comma-separated list of list IDs to fetch from
+# Default includes all lists where 2.0.0 bugs currently live:
+# - Spire Bug Backlog (901207871711)
+# - Spire Product Backlog (901206064082)
+# - Triage List (901211328806)
+# - Active Sprints: AG (5/12-5/26), AH (5/26-6/9), AI (6/9-6/23), AJ (6/23-7/7)
+DEFAULT_LIST_IDS = ','.join([
+    '901207871711',  # Spire Bug Backlog
+    '901206064082',  # Spire Product Backlog
+    '901211328806',  # Triage List - Tasks created from Slack
+    '901326883162',  # Sprint AG (5/12 - 5/26)
+    '901326883179',  # Sprint AH (5/26 - 6/9)
+    '901326883209',  # Sprint AI (6/9 - 6/23)
+    '901327316653',  # Sprint AJ (6/23 - 7/7)
+])
+LIST_IDS = os.getenv('CLICKUP_LIST_IDS', os.getenv('CLICKUP_LIST_ID', DEFAULT_LIST_IDS)).split(',')
+LIST_IDS = [lid.strip() for lid in LIST_IDS if lid.strip()]
 BASE_URL = 'https://api.clickup.com/api/v2'
 
 # Output file configuration
@@ -36,111 +52,123 @@ RATE_LIMIT_DELAY = 0.5  # seconds between requests
 
 
 class ClickUpBatchFetcher:
-    """Fetches all tasks from a ClickUp list with progress tracking and resumability."""
+    """Fetches tasks from multiple ClickUp lists and deduplicates by task ID."""
 
-    def __init__(self, api_key: str, list_id: str):
+    def __init__(self, api_key: str, list_ids: List[str]):
         self.api_key = api_key
-        self.list_id = list_id
+        self.list_ids = list_ids
         self.headers = {
             'Authorization': api_key,
             'Content-Type': 'application/json'
         }
         self.base_url = BASE_URL
         self.all_bugs = []
+        self.bugs_by_id = {}  # For deduplication: {task_id: task_data}
         self.total_fetched = 0
 
     def fetch_all_tasks(self, include_closed: bool = True) -> List[Dict[str, Any]]:
         """
-        Fetch all tasks from the ClickUp list using pagination.
+        Fetch all tasks from each configured ClickUp list, deduplicating by task ID.
+        Tasks that appear in multiple lists (e.g. backlog + sprint) are only counted once.
 
         Args:
             include_closed: Whether to include closed/completed tasks
 
         Returns:
-            List of all tasks with full details
+            Deduplicated list of all tasks with full details
         """
         print(f"\n{'='*60}")
-        print(f"Starting batch fetch from ClickUp List: {self.list_id}")
+        print(f"Starting batch fetch from {len(self.list_ids)} ClickUp lists")
         print(f"Include closed tasks: {include_closed}")
+        for lid in self.list_ids:
+            print(f"  - {lid}")
         print(f"{'='*60}\n")
 
-        page = 0
-        has_more = True
+        for list_idx, list_id in enumerate(self.list_ids, 1):
+            print(f"\n[{list_idx}/{len(self.list_ids)}] Fetching from list {list_id}...")
+            self._fetch_list(list_id, include_closed)
 
-        while has_more:
-            print(f"Fetching page {page}...")
-
-            # Build request URL with parameters
-            url = f"{self.base_url}/list/{self.list_id}/task"
-            params = {
-                'page': page,
-                'include_closed': str(include_closed).lower(),
-                'subtasks': 'false',  # We only want top-level bugs
-            }
-
-            try:
-                # Make API request
-                response = requests.get(url, headers=self.headers, params=params)
-                response.raise_for_status()
-
-                # Parse response
-                data = response.json()
-                tasks = data.get('tasks', [])
-
-                if not tasks:
-                    print(f"  No more tasks found on page {page}")
-                    has_more = False
-                else:
-                    # Add tasks to our collection
-                    self.all_bugs.extend(tasks)
-                    self.total_fetched += len(tasks)
-
-                    print(f"  [OK] Fetched {len(tasks)} tasks (Total: {self.total_fetched})")
-
-                    # Save checkpoint after each page
-                    self._save_checkpoint(page, self.total_fetched)
-
-                    # Check if there are more pages
-                    # ClickUp returns empty list when no more tasks
-                    page += 1
-
-                    # Respect rate limits
-                    time.sleep(RATE_LIMIT_DELAY)
-
-            except requests.exceptions.HTTPError as e:
-                if e.response.status_code == 404:
-                    print(f"  List not found. Check LIST_ID: {self.list_id}")
-                    break
-                elif e.response.status_code == 401:
-                    print(f"  Authentication failed. Check your API key.")
-                    break
-                elif e.response.status_code == 429:
-                    print(f"  Rate limited. Waiting 60 seconds...")
-                    time.sleep(60)
-                    continue
-                else:
-                    print(f"  HTTP Error: {e}")
-                    print(f"  Response: {e.response.text}")
-                    break
-
-            except Exception as e:
-                print(f"  Error fetching page {page}: {e}")
-                break
+        # Build deduplicated list
+        self.all_bugs = list(self.bugs_by_id.values())
 
         print(f"\n{'='*60}")
         print(f"Batch fetch complete!")
-        print(f"Total bugs fetched: {self.total_fetched}")
+        print(f"Total tasks fetched (with duplicates): {self.total_fetched}")
+        print(f"Unique bugs after deduplication: {len(self.all_bugs)}")
         print(f"{'='*60}\n")
 
         return self.all_bugs
 
-    def _save_checkpoint(self, page: int, total: int):
+    def _fetch_list(self, list_id: str, include_closed: bool):
+        """Fetch all tasks from a single list, adding to bugs_by_id for deduplication."""
+        page = 0
+        list_total = 0
+        has_more = True
+
+        while has_more:
+            url = f"{self.base_url}/list/{list_id}/task"
+            params = {
+                'page': page,
+                'include_closed': str(include_closed).lower(),
+                'subtasks': 'false',
+            }
+
+            try:
+                response = requests.get(url, headers=self.headers, params=params)
+                response.raise_for_status()
+                data = response.json()
+                tasks = data.get('tasks', [])
+
+                if not tasks:
+                    has_more = False
+                else:
+                    # Deduplicate by task ID as we collect
+                    new_count = 0
+                    for task in tasks:
+                        task_id = task.get('id')
+                        if task_id and task_id not in self.bugs_by_id:
+                            self.bugs_by_id[task_id] = task
+                            new_count += 1
+
+                    list_total += len(tasks)
+                    self.total_fetched += len(tasks)
+                    print(f"  Page {page}: {len(tasks)} tasks ({new_count} new). List total: {list_total}, Unique overall: {len(self.bugs_by_id)}")
+
+                    self._save_checkpoint(list_id, page, self.total_fetched)
+                    page += 1
+                    time.sleep(RATE_LIMIT_DELAY)
+
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 404:
+                    print(f"  ⚠️  List {list_id} not found, skipping")
+                    return
+                elif e.response.status_code == 401:
+                    print(f"  ❌ Authentication failed. Check your API key.")
+                    raise
+                elif e.response.status_code == 429:
+                    print(f"  ⏱️  Rate limited. Waiting 60 seconds...")
+                    time.sleep(60)
+                    continue
+                else:
+                    print(f"  ❌ HTTP Error: {e}")
+                    print(f"  Response: {e.response.text}")
+                    raise
+
+            except Exception as e:
+                print(f"  ❌ Error fetching page {page} of list {list_id}: {e}")
+                raise
+
+        print(f"  ✅ List {list_id}: {list_total} tasks fetched")
+
+    def _save_checkpoint(self, list_id: str, page: int, total: int):
         """Save progress checkpoint for resumability."""
         checkpoint = {
+            'last_list_id': list_id,
             'last_page': page,
             'total_fetched': total,
+            'unique_bugs': len(self.bugs_by_id),
             'timestamp': datetime.now().isoformat(),
-            'list_id': self.list_id
+            'list_ids': self.list_ids
         }
 
         with open(CHECKPOINT_FILE, 'w') as f:
@@ -160,9 +188,9 @@ class ClickUpBatchFetcher:
         output = {
             'metadata': {
                 'total_bugs': len(self.all_bugs),
-                'list_id': self.list_id,
+                'list_ids': self.list_ids,
                 'fetched_at': datetime.now().isoformat(),
-                'source': 'ClickUp REST API'
+                'source': 'ClickUp REST API (multi-list, deduplicated)'
             },
             'bugs': self.all_bugs
         }
@@ -227,12 +255,12 @@ def main():
         print("  CLICKUP_LIST_ID=901207871711")
         return
 
-    if not LIST_ID:
-        print("ERROR: CLICKUP_LIST_ID not found in environment")
+    if not LIST_IDS:
+        print("ERROR: No list IDs configured (CLICKUP_LIST_IDS or CLICKUP_LIST_ID)")
         return
 
     # Create fetcher
-    fetcher = ClickUpBatchFetcher(API_KEY, LIST_ID)
+    fetcher = ClickUpBatchFetcher(API_KEY, LIST_IDS)
 
     # Fetch all tasks (including closed ones for burndown analysis)
     bugs = fetcher.fetch_all_tasks(include_closed=True)
