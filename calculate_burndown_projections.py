@@ -445,11 +445,15 @@ def generate_estimated_line(actual_line_data, end_date, historical_rate):
 
 def generate_actual_line(historical_actuals, starting_count, today):
     """
-    Generate Actual line: Uses historical actuals from 5/11-5/21, will be updated daily.
+    Generate Actual line from historical actuals + current real-time count for today.
+
+    The historical actuals show "active at start of day" for each date.
+    For today specifically, we override with the current real-time count so the
+    Active Bugs card always matches the chart's last data point.
 
     Args:
         historical_actuals: List of historical actual data points (or None)
-        starting_count: Current active bug count (as of today)
+        starting_count: Current active bug count (as of today, real-time)
         today: Today's date
 
     Returns:
@@ -458,11 +462,28 @@ def generate_actual_line(historical_actuals, starting_count, today):
     print(f"\n✅ Actual Line:")
 
     if historical_actuals:
-        # Use historical actuals from 5/11 through 5/21
-        print(f"   Using historical actuals: {len(historical_actuals)} data points (5/11 - 5/21)")
-        print(f"   Starting: {historical_actuals[0]['count']} bugs on {historical_actuals[0]['date']}")
-        print(f"   Current: {historical_actuals[-1]['count']} bugs on {historical_actuals[-1]['date']}")
-        return historical_actuals
+        today_str = today.strftime('%Y-%m-%d')
+
+        # Copy historical actuals and override today's value with real-time count
+        actual_line = [dict(p) for p in historical_actuals]
+        today_point_idx = next(
+            (i for i, p in enumerate(actual_line) if p['date'] == today_str),
+            None
+        )
+
+        if today_point_idx is not None:
+            old_count = actual_line[today_point_idx]['count']
+            actual_line[today_point_idx]['count'] = starting_count
+            print(f"   Overriding today's historical count ({old_count}) with real-time count ({starting_count})")
+        else:
+            # Today isn't in historical actuals, append it
+            actual_line.append({"date": today_str, "count": starting_count})
+            print(f"   Appending today's real-time count: {starting_count}")
+
+        print(f"   Using historical actuals: {len(actual_line)} data points")
+        print(f"   Starting: {actual_line[0]['count']} bugs on {actual_line[0]['date']}")
+        print(f"   Current: {actual_line[-1]['count']} bugs on {actual_line[-1]['date']}")
+        return actual_line
     else:
         # Fallback: just use today's count
         print(f"   Starting point: {starting_count} bugs on {today.strftime('%B %d, %Y')}")
