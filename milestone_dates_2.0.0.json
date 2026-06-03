@@ -4,14 +4,14 @@
     "clickup_name": "2.0.0 Global",
     "release_calendar_name": "Client 8",
     "key_dates": {
-      "feature_complete": "2026-05-25",
-      "bug_fixing_only": "2026-05-26",
-      "code_freeze": "2026-06-02",
-      "blocking_bugs_only": "2026-06-03",
+      "feature_complete": "2026-05-13",
+      "bug_fixing_only": "2026-05-14",
+      "code_freeze": "2026-06-04",
+      "blocking_bugs_only": "2026-06-05",
       "submit": "2026-06-10",
       "go_live": "2026-06-15"
     },
-    "notes": "Primary 2.0.0 Global release - Client 8 in Release Calendar. Gantt shows FC as 5/11 but Release Calendar shows 5/25. Submit and Go Live dates match exactly."
+    "notes": "Primary 2.0.0 Global release - dates from Roadmap (https://docs.google.com/spreadsheets/d/1wuw5HSO8JFBCPgRJYKRXqngx9VeadKaSC6QquUpJEjQ). Feature Complete 2026-05-13, Code Freeze 2026-06-04, Go Live 2026-06-15."
   },
   "related_releases": {
     "1.3_fortis": {

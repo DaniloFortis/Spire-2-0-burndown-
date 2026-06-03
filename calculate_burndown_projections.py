@@ -25,14 +25,26 @@ if sys.platform == 'win32':
 BUGS_FILE = "bugs_with_parsed_dates.json"
 HISTORICAL_RATE_FILE = "historical_rate_analysis.json"
 HISTORICAL_ACTUALS_FILE = "historical_actuals_5_11_to_06_03.json"
+MILESTONE_DATES_FILE = "milestone_dates_2.0.0.json"
 OUTPUT_FILE = "burndown_projections.json"
 
-# Key Dates
-CHART_START = datetime(2026, 5, 11)  # Chart starts from May 11
-TODAY = datetime(2026, 5, 21)
-CODE_FREEZE = datetime(2026, 6, 2)
-SUBMIT = datetime(2026, 6, 10)
-GO_LIVE = datetime(2026, 6, 15)
+
+def load_milestone_dates():
+    """Load milestone dates from milestone_dates_2.0.0.json (source of truth)."""
+    with open(MILESTONE_DATES_FILE, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    return data['2.0.0_Global']['key_dates']
+
+
+# Load milestone dates from JSON (single source of truth)
+_milestone_dates = load_milestone_dates()
+
+# Key Dates - now loaded from milestone_dates_2.0.0.json
+CHART_START = datetime(2026, 5, 11)  # Chart starts from May 11 (historical actuals start)
+TODAY = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+CODE_FREEZE = datetime.strptime(_milestone_dates['code_freeze'], '%Y-%m-%d')
+SUBMIT = datetime.strptime(_milestone_dates['submit'], '%Y-%m-%d')
+GO_LIVE = datetime.strptime(_milestone_dates['go_live'], '%Y-%m-%d')
 
 # Calculate business days to key milestones
 def count_business_days(start_date, end_date):
@@ -523,8 +535,8 @@ def main():
     )
 
     print(f"\n📊 Rate Comparison:")
-    print(f"   Ideal rate from chart start (5/11): {ideal_rate_from_start:.2f} bugs/day")
-    print(f"   Ideal rate from today (5/21): {ideal_rate_from_today:.2f} bugs/day (what's needed NOW)")
+    print(f"   Ideal rate from chart start ({CHART_START.strftime('%b %d')}): {ideal_rate_from_start:.2f} bugs/day")
+    print(f"   Ideal rate from today ({TODAY.strftime('%b %d')}): {ideal_rate_from_today:.2f} bugs/day (what's needed NOW)")
 
     # Build output structure
     projections = {
