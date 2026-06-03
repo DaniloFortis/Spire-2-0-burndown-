@@ -1,5 +1,5 @@
 {
-  "calculated_date": "2026-06-03T18:22:30.742122",
+  "calculated_date": "2026-06-03T21:54:27.139240",
   "method": "Retroactive calculation from bug created/closed dates",
   "start_date": "2026-05-11",
   "end_date": "2026-06-03",
@@ -7,99 +7,99 @@
   "actuals": [
     {
       "date": "2026-05-11",
-      "count": 217
+      "count": 214
     },
     {
       "date": "2026-05-12",
-      "count": 208
+      "count": 205
     },
     {
       "date": "2026-05-13",
-      "count": 207
-    },
-    {
-      "date": "2026-05-14",
       "count": 204
     },
     {
+      "date": "2026-05-14",
+      "count": 201
+    },
+    {
       "date": "2026-05-15",
-      "count": 202
+      "count": 199
     },
     {
       "date": "2026-05-16",
-      "count": 193
+      "count": 190
     },
     {
       "date": "2026-05-17",
-      "count": 193
+      "count": 190
     },
     {
       "date": "2026-05-18",
-      "count": 193
+      "count": 190
     },
     {
       "date": "2026-05-19",
-      "count": 198
+      "count": 195
     },
     {
       "date": "2026-05-20",
-      "count": 148
+      "count": 145
     },
     {
       "date": "2026-05-21",
-      "count": 136
+      "count": 133
     },
     {
       "date": "2026-05-22",
-      "count": 126
+      "count": 123
     },
     {
       "date": "2026-05-23",
-      "count": 116
+      "count": 112
     },
     {
       "date": "2026-05-24",
-      "count": 112
+      "count": 108
     },
     {
       "date": "2026-05-25",
-      "count": 112
+      "count": 108
     },
     {
       "date": "2026-05-26",
-      "count": 103
+      "count": 99
     },
     {
       "date": "2026-05-27",
-      "count": 103
+      "count": 99
     },
     {
       "date": "2026-05-28",
-      "count": 88
-    },
-    {
-      "date": "2026-05-29",
       "count": 84
     },
     {
+      "date": "2026-05-29",
+      "count": 79
+    },
+    {
       "date": "2026-05-30",
-      "count": 74
+      "count": 69
     },
     {
       "date": "2026-05-31",
-      "count": 74
+      "count": 69
     },
     {
       "date": "2026-06-01",
-      "count": 74
+      "count": 69
     },
     {
       "date": "2026-06-02",
-      "count": 59
+      "count": 54
     },
     {
       "date": "2026-06-03",
-      "count": 48
+      "count": 43
     }
   ]
 }
