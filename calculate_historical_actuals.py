@@ -26,11 +26,32 @@ if sys.platform == 'win32':
 
 # Configuration
 BUGS_FILE = "bugs_with_parsed_dates.json"
-OUTPUT_FILE = "historical_actuals_5_11_to_5_28.json"
+OUTPUT_FILE = "historical_actuals_5_11_to_06_03.json"
 
 # Date range
 START_DATE = datetime(2026, 5, 11)
-END_DATE = datetime(2026, 5, 28)
+END_DATE = datetime(2026, 6, 3)
+
+# Active statuses for math calculations (excludes "In QA" per requirement)
+# A bug currently in one of these statuses is considered active for math purposes
+ACTIVE_MATH_STATUSES = [
+    'to-do',
+    'reopened',
+    'in progress',
+    'design review',
+    'art review',
+    'code review',
+    'build pending',
+    'blocked',
+    'need more info'
+]
+
+
+def is_active_for_math(status):
+    """Check if a bug status counts as active for math calculations (excludes In QA)."""
+    if not status:
+        return False
+    return status.lower().strip() in ACTIVE_MATH_STATUSES
 
 
 def load_bugs():
@@ -59,14 +80,22 @@ def calculate_daily_counts(bugs, start_date, end_date):
         dict: {date_str: count} for each day
     """
     print(f"\n📊 Calculating daily counts from {start_date.strftime('%b %d')} to {end_date.strftime('%b %d, %Y')}...")
+    print(f"   Excluding bugs currently in 'In QA' status from math (per requirement)")
 
-    # Filter to 2.0.0 Global bugs
-    milestone_2_0 = [
+    # Filter to 2.0.0 Global bugs that are currently active for math
+    # (excludes bugs currently in QA, Closed, or Won't Fix)
+    milestone_2_0_active = [
         bug for bug in bugs
         if bug.get('milestone_simplified') == '2.0.0 Global'
+        and (
+            # Either the bug is currently active (for math)
+            is_active_for_math(bug.get('status'))
+            # OR the bug is now closed (we still need to count it on dates before it closed)
+            or bug.get('status', '').lower().strip() == 'closed'
+        )
     ]
 
-    print(f"   Total 2.0.0 Global bugs: {len(milestone_2_0)}")
+    print(f"   Total 2.0.0 Global bugs (after filter): {len(milestone_2_0_active)}")
 
     daily_counts = {}
     current_date = start_date
@@ -75,7 +104,7 @@ def calculate_daily_counts(bugs, start_date, end_date):
         # Count active bugs on this date
         active_on_date = []
 
-        for bug in milestone_2_0:
+        for bug in milestone_2_0_active:
             # Parse dates
             date_created_str = bug.get('date_created')
             date_closed_str = bug.get('date_closed')

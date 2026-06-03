@@ -326,7 +326,7 @@ def generate_summary_stats(data):
             <div style="background-color: rgba(244, 197, 66, 0.15); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid rgba(244, 197, 66, 0.3);">
                 <h3 style="margin: 0; font-size: 11px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px;">Active Bugs</h3>
                 <p style="font-size: 32px; font-weight: bold; margin: 8px 0; color: #F4C542;">{current_bugs}</p>
-                <p style="margin: 0; font-size: 10px; opacity: 0.7;">As of {data['generated_date']}</p>
+                <p style="margin: 0; font-size: 10px; opacity: 0.7;">Excludes In QA · As of {data['generated_date']}</p>
             </div>
             <div style="background-color: rgba(244, 197, 66, 0.15); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid rgba(244, 197, 66, 0.3);">
                 <h3 style="margin: 0; font-size: 11px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px;">Code Freeze</h3>
@@ -355,6 +355,66 @@ def generate_summary_stats(data):
     return html
 
 
+def generate_status_breakdown(data):
+    """
+    Generate HTML status breakdown cards (one per status with 1+ bugs).
+    Includes In QA, excludes Closed and Won't Fix.
+
+    Args:
+        data: Projection data dictionary
+
+    Returns:
+        HTML string
+    """
+    print("🏷️  Generating status breakdown cards...")
+
+    status_breakdown = data.get('status_breakdown', {})
+
+    if not status_breakdown:
+        return ""
+
+    # Color palette for status badges - mapped to status semantics
+    status_colors = {
+        'to-do': '#7F8C8D',           # Gray - waiting to start
+        'in progress': '#3498DB',     # Blue - actively being worked
+        'in qa': '#9B59B6',           # Purple - in testing
+        'qa review': '#9B59B6',       # Purple - QA workflow
+        'code review': '#1ABC9C',     # Teal - code review
+        'design review': '#16A085',   # Dark teal - design review
+        'art review': '#E91E63',      # Pink - art review
+        'build pending': '#F39C12',   # Orange - waiting for build
+        'reopened': '#E74C3C',        # Red - regression
+        'blocked': '#C0392B',         # Dark red - blocked
+        'need more info': '#F1C40F',  # Yellow - awaiting info
+    }
+
+    # Build cards
+    cards_html = ""
+    for status, count in status_breakdown.items():
+        status_lower = status.lower().strip()
+        color = status_colors.get(status_lower, '#95A5A6')  # Default gray
+        # Capitalize first letter of each word for display
+        display_status = ' '.join(word.capitalize() for word in status.split())
+
+        cards_html += f"""
+            <div style="background-color: white; padding: 12px 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); border-left: 4px solid {color}; min-width: 130px; flex: 0 1 auto;">
+                <div style="font-size: 10px; color: #7F8C8D; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px;">{display_status}</div>
+                <div style="font-size: 24px; font-weight: bold; color: {color}; line-height: 1;">{count}</div>
+            </div>
+        """
+
+    html = f"""
+    <div style="background-color: white; padding: 16px 20px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 12px 0; color: #2C3E50; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">📊 Bug Status Breakdown</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            {cards_html}
+        </div>
+    </div>
+    """
+
+    return html
+
+
 def generate_dashboard(projections):
     """Generate complete HTML dashboard."""
     print("\n🚀 Generating dashboard HTML...")
@@ -364,6 +424,9 @@ def generate_dashboard(projections):
 
     # Generate summary stats
     summary_html = generate_summary_stats(projections)
+
+    # Generate status breakdown cards
+    status_breakdown_html = generate_status_breakdown(projections)
 
     # Combine into HTML
     print(f"\n💾 Saving dashboard to {OUTPUT_HTML}...")
@@ -463,6 +526,8 @@ def generate_dashboard(projections):
     </div>
 
     {summary_html}
+
+    {status_breakdown_html}
 
     <div class="legend">
         <h3>📈 Understanding the Lines</h3>

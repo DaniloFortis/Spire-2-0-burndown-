@@ -24,7 +24,7 @@ if sys.platform == 'win32':
 # Configuration
 BUGS_FILE = "bugs_with_parsed_dates.json"
 HISTORICAL_RATE_FILE = "historical_rate_analysis.json"
-HISTORICAL_ACTUALS_FILE = "historical_actuals_5_11_to_5_28.json"
+HISTORICAL_ACTUALS_FILE = "historical_actuals_5_11_to_06_03.json"
 OUTPUT_FILE = "burndown_projections.json"
 
 # Key Dates
@@ -82,9 +82,42 @@ def load_historical_actuals():
         return None
 
 
+# Active statuses for math calculations (excludes "In QA" per requirement)
+# These statuses indicate work still needs to be done (not yet ready for QA)
+ACTIVE_MATH_STATUSES = [
+    'to-do',
+    'reopened',
+    'in progress',
+    'design review',
+    'art review',
+    'code review',
+    'build pending',
+    'blocked',
+    'need more info'
+]
+
+# Statuses considered "non-active" (excluded from dashboard breakdown cards)
+EXCLUDED_FROM_DASHBOARD = ['closed', "won't fix"]
+
+
+def is_active_for_math(status):
+    """Check if a bug status counts as active for math calculations (excludes In QA)."""
+    if not status:
+        return False
+    return status.lower().strip() in ACTIVE_MATH_STATUSES
+
+
+def is_excluded_from_dashboard(status):
+    """Check if a bug status should be hidden from dashboard breakdown (Closed/Won't Fix)."""
+    if not status:
+        return True
+    return status.lower().strip() in EXCLUDED_FROM_DASHBOARD
+
+
 def count_active_2_0_bugs(bugs):
     """
-    Count current active 2.0.0 Global bugs (non-Closed status, excluding WON'T FIX).
+    Count current active 2.0.0 Global bugs using ACTIVE_MATH_STATUSES allowlist.
+    Excludes "In QA" per requirement - those bugs don't need dev work.
 
     Args:
         bugs: List of parsed bug dictionaries
@@ -92,18 +125,15 @@ def count_active_2_0_bugs(bugs):
     Returns:
         int: Count of active bugs
     """
-    # Exclude both Closed and WON'T FIX statuses
-    excluded_statuses = ['Closed', 'closed', "won't fix", "Won't Fix", "WON'T FIX"]
-
     active_bugs = [
         bug for bug in bugs
         if bug.get('milestone_simplified') == '2.0.0 Global'
-        and bug.get('status') not in excluded_statuses
+        and is_active_for_math(bug.get('status'))
     ]
 
     print(f"\n📊 2.0.0 Global Bug Analysis:")
     print(f"   Total 2.0.0 bugs: {len([b for b in bugs if b.get('milestone_simplified') == '2.0.0 Global'])}")
-    print(f"   Active (non-Closed): {len(active_bugs)}")
+    print(f"   Active (excludes In QA, Closed, WON'T FIX): {len(active_bugs)}")
 
     # Show status breakdown
     status_counts = {}
@@ -116,6 +146,37 @@ def count_active_2_0_bugs(bugs):
         print(f"     - {status}: {count}")
 
     return len(active_bugs)
+
+
+def get_status_breakdown(bugs):
+    """
+    Get count of bugs for each status (for dashboard cards).
+    Includes In QA but excludes Closed and WON'T FIX.
+    Only returns statuses with 1+ bugs.
+
+    Args:
+        bugs: List of parsed bug dictionaries
+
+    Returns:
+        dict: {status_name: count} sorted by count descending
+    """
+    milestone_bugs = [
+        bug for bug in bugs
+        if bug.get('milestone_simplified') == '2.0.0 Global'
+        and not is_excluded_from_dashboard(bug.get('status'))
+    ]
+
+    status_counts = {}
+    for bug in milestone_bugs:
+        status = bug.get('status', 'unknown')
+        status_counts[status] = status_counts.get(status, 0) + 1
+
+    # Sort by count descending and only include statuses with 1+ bugs
+    return {
+        status: count
+        for status, count in sorted(status_counts.items(), key=lambda x: x[1], reverse=True)
+        if count > 0
+    }
 
 
 def calculate_actual_2_0_rate(bugs):
@@ -421,6 +482,12 @@ def main():
     # Calculate current active count
     active_count = count_active_2_0_bugs(bugs)
 
+    # Get status breakdown for dashboard cards (includes In QA, excludes Closed/Won't Fix)
+    status_breakdown = get_status_breakdown(bugs)
+    print(f"\n📋 Status Breakdown for Dashboard:")
+    for status, count in status_breakdown.items():
+        print(f"   {status}: {count}")
+
     # Get historical rate from analysis (for reference)
     historical_rate = historical_rate_data['historical_daily_rate']
 
@@ -466,6 +533,7 @@ def main():
         "chart_start_date": CHART_START.strftime('%Y-%m-%d'),
         "chart_start_bug_count": chart_start_count,
         "current_active_bugs": active_count,
+        "status_breakdown": status_breakdown,  # All non-Closed/Won't Fix statuses with counts
         "historical_daily_rate": round(historical_rate, 2),  # Kept for reference
         "actual_2_0_rate": round(actual_2_0_rate, 2),  # Actual rate for 2.0.0 bugs
         "ideal_rate_per_day": round(ideal_rate_from_today, 2),  # Required rate from TODAY

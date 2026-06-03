@@ -31,30 +31,88 @@ PROJECTIONS_FILE = "burndown_projections.json"
 TODAY = datetime.now().date()
 
 
+# Active statuses for math calculations (excludes "In QA" per requirement)
+ACTIVE_MATH_STATUSES = [
+    'to-do',
+    'reopened',
+    'in progress',
+    'design review',
+    'art review',
+    'code review',
+    'build pending',
+    'blocked',
+    'need more info'
+]
+
+# Statuses to exclude from dashboard breakdown (Closed/Won't Fix)
+EXCLUDED_FROM_DASHBOARD = ['closed', "won't fix"]
+
+
+def is_active_for_math(status):
+    """Check if a bug status counts as active for math (excludes In QA)."""
+    if not status:
+        return False
+    return status.lower().strip() in ACTIVE_MATH_STATUSES
+
+
+def is_excluded_from_dashboard(status):
+    """Check if a status should be hidden from dashboard breakdown."""
+    if not status:
+        return True
+    return status.lower().strip() in EXCLUDED_FROM_DASHBOARD
+
+
 def count_active_bugs():
     """
-    Count current active 2.0.0 bugs from bug data.
+    Count current active 2.0.0 bugs (using ACTIVE_MATH_STATUSES allowlist).
+    Excludes In QA per requirement.
 
     Returns:
         int: Current active bug count
     """
-    print(f"📊 Counting active 2.0.0 bugs...")
+    print(f"📊 Counting active 2.0.0 bugs (excluding In QA)...")
 
     with open(BUGS_FILE, 'r', encoding='utf-8') as f:
         bugs = json.load(f)
 
-    # Exclude WON'T FIX from active counts
-    excluded_statuses = ['Closed', 'closed', "won't fix", "Won't Fix", "WON'T FIX"]
-
     active_bugs = [
         bug for bug in bugs
         if bug.get('milestone_simplified') == '2.0.0 Global'
-        and bug.get('status') not in excluded_statuses
+        and is_active_for_math(bug.get('status'))
     ]
 
     count = len(active_bugs)
     print(f"✅ Current active bugs: {count}")
     return count
+
+
+def get_status_breakdown():
+    """
+    Get status breakdown for dashboard cards (includes In QA, excludes Closed/Won't Fix).
+    Only returns statuses with 1+ bugs.
+
+    Returns:
+        dict: {status_name: count}
+    """
+    with open(BUGS_FILE, 'r', encoding='utf-8') as f:
+        bugs = json.load(f)
+
+    milestone_bugs = [
+        bug for bug in bugs
+        if bug.get('milestone_simplified') == '2.0.0 Global'
+        and not is_excluded_from_dashboard(bug.get('status'))
+    ]
+
+    status_counts = {}
+    for bug in milestone_bugs:
+        status = bug.get('status', 'unknown')
+        status_counts[status] = status_counts.get(status, 0) + 1
+
+    return {
+        status: count
+        for status, count in sorted(status_counts.items(), key=lambda x: x[1], reverse=True)
+        if count > 0
+    }
 
 
 def update_actual_line(projections, today_count):
@@ -235,6 +293,13 @@ def main():
 
     # Step 4: Recalculate estimated line
     projections = recalculate_estimated_line(projections)
+
+    # Step 4.5: Update status breakdown for dashboard cards
+    status_breakdown = get_status_breakdown()
+    projections['status_breakdown'] = status_breakdown
+    print(f"\n📋 Status Breakdown:")
+    for status, count in status_breakdown.items():
+        print(f"   {status}: {count}")
 
     # Step 5: Update metadata
     projections['generated_date'] = TODAY.strftime('%Y-%m-%d')
