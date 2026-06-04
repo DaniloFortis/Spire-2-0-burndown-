@@ -1,16 +1,15 @@
 {
   "generated_date": "2026-06-04",
-  "generated_timestamp": "2026-06-04T20:25:31.294470",
+  "generated_timestamp": "2026-06-04T21:02:08.289354",
   "chart_start_date": "2026-05-11",
   "chart_start_bug_count": 211,
   "current_active_bugs": 10,
   "status_breakdown": {
     "in qa": 24,
-    "build pending": 4,
+    "build pending": 5,
     "to-do": 2,
     "in progress": 2,
-    "code review": 1,
-    "reopened": 1
+    "code review": 1
   },
   "historical_daily_rate": -3.8,
   "actual_2_0_rate": 4.68,
