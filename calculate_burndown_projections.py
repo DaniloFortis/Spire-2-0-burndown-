@@ -548,7 +548,13 @@ def main():
     )
 
     # Also calculate the rate required FROM TODAY (for dashboard metrics)
-    ideal_rate_from_today = -active_count / BUSINESS_DAYS_TO_CODE_FREEZE
+    # Guard against division by zero on/after Code Freeze day
+    if BUSINESS_DAYS_TO_CODE_FREEZE > 0:
+        ideal_rate_from_today = -active_count / BUSINESS_DAYS_TO_CODE_FREEZE
+    else:
+        # On or past Code Freeze: all remaining bugs need to be fixed immediately
+        # Use -active_count as the rate (1 day's worth needed today)
+        ideal_rate_from_today = -float(active_count) if active_count > 0 else 0.0
 
     # Generate estimated line starting from last actual point
     estimated_line, estimated_line_rate, estimated_line_rate_source = generate_estimated_line(
