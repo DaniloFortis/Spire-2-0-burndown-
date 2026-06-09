@@ -1,5 +1,5 @@
 {
-  "calculated_date": "2026-06-09T16:31:49.526158",
+  "calculated_date": "2026-06-09T21:05:23.171614",
   "method": "Retroactive calculation from bug created/closed dates",
   "start_date": "2026-05-11",
   "end_date": "2026-06-09",
@@ -67,63 +67,63 @@
     },
     {
       "date": "2026-05-26",
-      "count": 100
+      "count": 101
     },
     {
       "date": "2026-05-27",
-      "count": 99
+      "count": 100
     },
     {
       "date": "2026-05-28",
-      "count": 83
+      "count": 84
     },
     {
       "date": "2026-05-29",
-      "count": 79
+      "count": 80
     },
     {
       "date": "2026-05-30",
-      "count": 68
+      "count": 69
     },
     {
       "date": "2026-05-31",
-      "count": 68
+      "count": 69
     },
     {
       "date": "2026-06-01",
-      "count": 68
+      "count": 69
     },
     {
       "date": "2026-06-02",
-      "count": 53
+      "count": 55
     },
     {
       "date": "2026-06-03",
-      "count": 41
+      "count": 43
     },
     {
       "date": "2026-06-04",
-      "count": 28
+      "count": 32
     },
     {
       "date": "2026-06-05",
-      "count": 23
+      "count": 27
     },
     {
       "date": "2026-06-06",
-      "count": 16
+      "count": 24
     },
     {
       "date": "2026-06-07",
-      "count": 17
+      "count": 25
     },
     {
       "date": "2026-06-08",
-      "count": 17
+      "count": 25
     },
     {
       "date": "2026-06-09",
-      "count": 4
+      "count": 15
     }
   ]
 }
