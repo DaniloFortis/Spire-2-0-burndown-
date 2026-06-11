@@ -1,18 +1,17 @@
 {
   "generated_date": "2026-06-11",
-  "generated_timestamp": "2026-06-11T00:09:21.655896",
+  "generated_timestamp": "2026-06-11T17:37:15.432603",
   "chart_start_date": "2026-05-11",
   "chart_start_bug_count": 214,
-  "current_active_bugs": 2,
+  "current_active_bugs": 0,
   "status_breakdown": {
-    "to-do": 1,
-    "code review": 1
+    "in qa": 1
   },
   "historical_daily_rate": -3.8,
-  "actual_2_0_rate": 4.5,
-  "ideal_rate_per_day": -2.0,
+  "actual_2_0_rate": 4.52,
+  "ideal_rate_per_day": 0.0,
   "ideal_rate_from_start": -11.89,
-  "estimated_line_rate": -7.7,
+  "estimated_line_rate": -7.9,
   "estimated_line_rate_source": "last 10 business days",
   "business_days_to_code_freeze": 0,
   "calendar_days_to_code_freeze": -7,
@@ -130,7 +129,7 @@
     "estimated": [
       {
         "date": "2026-06-11",
-        "count": 2
+        "count": 0
       },
       {
         "date": "2026-06-12",
@@ -264,12 +263,12 @@
       },
       {
         "date": "2026-06-11",
-        "count": 2
+        "count": 0
       }
     ]
   },
   "metrics": {
-    "velocity_gap": 0.44,
+    "velocity_gap": 0.0,
     "on_track": true
   }
 }
