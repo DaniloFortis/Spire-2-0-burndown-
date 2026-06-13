@@ -1,22 +1,22 @@
 {
-  "generated_date": "2026-06-12",
-  "generated_timestamp": "2026-06-12T21:09:16.610180",
+  "generated_date": "2026-06-13",
+  "generated_timestamp": "2026-06-13T00:13:55.699476",
   "chart_start_date": "2026-05-11",
   "chart_start_bug_count": 214,
   "current_active_bugs": 0,
   "status_breakdown": {},
   "historical_daily_rate": -3.8,
-  "actual_2_0_rate": 4.44,
+  "actual_2_0_rate": 4.35,
   "ideal_rate_per_day": 0.0,
   "ideal_rate_from_start": -11.89,
   "estimated_line_rate": -6.8,
   "estimated_line_rate_source": "last 10 business days",
   "business_days_to_code_freeze": 0,
-  "calendar_days_to_code_freeze": -8,
-  "days_to_go_live": 3,
+  "calendar_days_to_code_freeze": -9,
+  "days_to_go_live": 2,
   "key_dates": {
     "chart_start": "2026-05-11",
-    "today": "2026-06-12",
+    "today": "2026-06-13",
     "code_freeze": "2026-06-04",
     "submit": "2026-06-10",
     "go_live": "2026-06-15"
@@ -126,11 +126,11 @@
     ],
     "estimated": [
       {
-        "date": "2026-06-12",
+        "date": "2026-06-13",
         "count": 0
       },
       {
-        "date": "2026-06-13",
+        "date": "2026-06-14",
         "count": 0
       }
     ],
@@ -265,6 +265,10 @@
       },
       {
         "date": "2026-06-12",
+        "count": 0
+      },
+      {
+        "date": "2026-06-13",
         "count": 0
       }
     ]
